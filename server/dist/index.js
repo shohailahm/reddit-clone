@@ -32,6 +32,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const redisClient = redis_1.default.createClient();
     app.use(express_session_1.default({
         name: 'qid',
+        saveUninitialized: false,
         store: new RedisStore({
             client: redisClient,
             disableTouch: true

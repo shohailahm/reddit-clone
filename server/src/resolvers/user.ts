@@ -1,3 +1,4 @@
+import { session } from 'express-session';
 import { Query, Resolver,Mutation, Arg, InputType, Field, Ctx,ObjectType } from "type-graphql";
 import { MyContext } from 'src/types';
 import { User } from './../entities/User';
@@ -31,6 +32,15 @@ class userNamePasswordInfo{
 
 @Resolver()
 export class UserResolver {
+  @Query(() => User, { nullable: true })
+  async me(@Ctx() {em, req }: MyContext) {
+    if (!req.session.userId) {
+       return null
+    }
+    const user = await em.findOne(User, { id: req.session.userId })
+   return user;
+    }
+
   @Mutation(()=>userResponse)
   async register(
     @Arg('options') options: userNamePasswordInfo,

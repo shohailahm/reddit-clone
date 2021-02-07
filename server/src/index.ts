@@ -11,47 +11,49 @@ import { UserResolver } from './resolvers/user';
 import redis from 'redis';
 import session from 'express-session';
 import ConnectRedis from 'connect-redis'
-import { MyContext } from 'src/types';
+// import { MyContext } from 'src/types';
 
- 
+
 
 
 const main = async () => {
   const orm = await MikroORM.init(mikroConfig);
   await orm.getMigrator().up()
   const app = express();
-  const  RedisStore = ConnectRedis(session)
-  const  redisClient = redis.createClient()
+  const RedisStore = ConnectRedis(session)
+  const redisClient = redis.createClient()
   app.use(
     session({
-    name:'qid',
-    store: new RedisStore({ 
-    client: redisClient,
-    disableTouch:true
-    }),
-    cookie:{
-      maxAge:1000*60*60*24*365*10,
-      httpOnly:true,
-      sameSite:'lax'
-    },
-    secret: 'reddit',
-    resave: false,
-  })
-)
+      name: 'qid',
+      saveUninitialized: false,
+      store: new RedisStore({
+        client: redisClient,
+        disableTouch: true
+      }),
+      cookie: {
+        maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
+        httpOnly: true,
+        sameSite: 'lax'
+      },
+      secret: 'reddit',
+      resave: false,
+
+    })
+  )
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
-      resolvers: [HelloResolver,PostResolver,UserResolver],
+      resolvers: [HelloResolver, PostResolver, UserResolver],
       validate: false,
-     
+
     }),
-     context:({req,res}):MyContext=>({em:orm.em,req,res})
+    context: ({ req, res })=> ({ em: orm.em, req, res })
   })
-  apolloServer.applyMiddleware({app});
+  apolloServer.applyMiddleware({ app });
   app.listen(4000, () => {
     console.log('server is running on port 4000');
-    
+
   })
-  
+
 }
 
 main();
